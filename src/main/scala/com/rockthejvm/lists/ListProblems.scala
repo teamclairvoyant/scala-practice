@@ -1,6 +1,6 @@
 package com.rockthejvm.lists
 
-import scala.annotation.{tailrec, targetName}
+import scala.annotation.tailrec
 
 abstract class RList[+T] {
   def head: T
