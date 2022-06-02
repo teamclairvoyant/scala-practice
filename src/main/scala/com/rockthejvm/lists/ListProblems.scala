@@ -14,6 +14,8 @@ abstract class RList[+T] {
   def apply(index: Int): T
 
   def length: Int
+
+  def reverse: RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -28,6 +30,8 @@ case object RNil extends RList[Nothing] {
   override def apply(index: Int): Nothing = throw new NoSuchElementException()
 
   override def length: Int = 0
+
+  override def reverse: RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -36,9 +40,12 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
   override def toString: String = {
     @tailrec
     def toStringHelper(remaining: RList[T], result: String): String = {
-      if (remaining.isEmpty) result
-      else if (remaining.tail.isEmpty) s"$result${remaining.head}"
-      else toStringHelper(remaining.tail, s"$result${remaining.head}, ")
+      if (remaining.isEmpty)
+        result
+      else if (remaining.tail.isEmpty)
+        s"$result${remaining.head}"
+      else
+        toStringHelper(remaining.tail, s"$result${remaining.head}, ")
     }
 
     s"[${toStringHelper(this, "")}]"
@@ -48,24 +55,44 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
   override def apply(index: Int): T = {
     @tailrec
     def applyHelper(remaining: RList[T], currentIndex: Int): T = {
-      if (currentIndex == index) remaining.head
-      else applyHelper(remaining.tail, currentIndex + 1)
+      if (currentIndex == index)
+        remaining.head
+      else
+        applyHelper(remaining.tail, currentIndex + 1)
     }
 
-    if (index < 0) throw new NoSuchElementException()
-    else applyHelper(this, 0)
+    if (index < 0)
+      throw new NoSuchElementException()
+    else
+      applyHelper(this, 0)
   }
 
   // Complexity: O(N)
   override def length: Int = {
     @tailrec
     def lengthHelper(list: RList[T], accumulator: Int): Int = {
-      if (list.isEmpty) accumulator
-      else lengthHelper(list.tail, accumulator + 1)
+      if (list.isEmpty)
+        accumulator
+      else
+        lengthHelper(list.tail, accumulator + 1)
     }
 
     lengthHelper(this, 0)
   }
+
+  // Complexity: O(N)
+  override def reverse: RList[T] = {
+    @tailrec
+    def reverseListHelper(list: RList[T], accumulator: RList[T]): RList[T] = {
+      if (list.isEmpty)
+        accumulator
+      else
+        reverseListHelper(list.tail, list.head :: accumulator)
+    }
+
+    reverseListHelper(this, RNil)
+  }
+
 }
 
 object ListProblems extends App {
@@ -78,4 +105,6 @@ object ListProblems extends App {
   println(list(2)) // 3
 
   println(list.length) // 6
+
+  println(list.reverse) // [7, 8, 9, 3, 2, 1]
 }
