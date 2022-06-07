@@ -97,6 +97,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     reverseListHelper(this, RNil)
   }
 
+  // Complexity: O(M + N), where M and N are the length of respective lists
   override def ++[S >: T](anotherList: RList[S]): RList[S] = {
     @tailrec
     def concatHelper(remainingList: RList[S], accumulator: RList[S]): RList[S] = {
