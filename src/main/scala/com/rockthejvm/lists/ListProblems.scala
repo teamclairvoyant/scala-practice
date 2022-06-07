@@ -16,6 +16,8 @@ abstract class RList[+T] {
   def length: Int
 
   def reverse: RList[T]
+
+  def ++[S >: T](anotherList: RList[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -32,6 +34,8 @@ case object RNil extends RList[Nothing] {
   override def length: Int = 0
 
   override def reverse: RList[Nothing] = RNil
+
+  override def ++[S >: Nothing](anotherList: RList[S]): RList[S] = anotherList
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -93,6 +97,18 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     reverseListHelper(this, RNil)
   }
 
+  override def ++[S >: T](anotherList: RList[S]): RList[S] = {
+    @tailrec
+    def concatHelper(remainingList: RList[S], accumulator: RList[S]): RList[S] = {
+      if (remainingList.isEmpty)
+        accumulator
+      else
+        concatHelper(remainingList.tail, remainingList.head :: accumulator)
+    }
+
+    concatHelper(this.reverse, anotherList)
+  }
+
 }
 
 object ListProblems extends App {
@@ -107,4 +123,9 @@ object ListProblems extends App {
   println(list.length) // 6
 
   println(list.reverse) // [7, 8, 9, 3, 2, 1]
+
+  val list1 = 1 :: 2 :: 3 :: RNil
+  val list2 = 4 :: 5 :: 6 :: RNil
+
+  println(list1 ++ list2) // [1, 2, 3, 4, 5, 6]
 }
