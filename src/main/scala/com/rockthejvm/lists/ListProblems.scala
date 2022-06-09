@@ -18,6 +18,10 @@ abstract class RList[+T] {
   def reverse: RList[T]
 
   def ++[S >: T](anotherList: RList[S]): RList[S]
+
+  def removeAt(index: Int): RList[T]
+
+  def map[S](f: T => S): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -36,6 +40,10 @@ case object RNil extends RList[Nothing] {
   override def reverse: RList[Nothing] = RNil
 
   override def ++[S >: Nothing](anotherList: RList[S]): RList[S] = anotherList
+
+  override def removeAt(index: Int): RList[Nothing] = RNil
+
+  override def map[S](f: Nothing => S): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -110,6 +118,34 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     concatHelper(this.reverse, anotherList)
   }
 
+  override def removeAt(index: Int): RList[T] = {
+    @tailrec
+    def removeAtHelper(currentIndex: Int, left: RList[T], right: RList[T]): RList[T] = {
+      if (currentIndex == index)
+        left.reverse ++ right.tail
+      else
+        removeAtHelper(currentIndex + 1, right.head :: left, right.tail)
+    }
+
+    if (index < 0)
+      this
+    else
+      removeAtHelper(0, RNil, this)
+  }
+
+  // Complexity: O(N)
+  override def map[S](f: T => S): RList[S] = {
+    @tailrec
+    def mapHelper(remainingList: RList[T], accumulator: RList[S]): RList[S] = {
+      if (remainingList.isEmpty)
+        accumulator.reverse
+      else
+        mapHelper(remainingList.tail, f(remainingList.head) :: accumulator)
+    }
+
+    mapHelper(this, RNil)
+  }
+
 }
 
 object ListProblems extends App {
@@ -129,4 +165,10 @@ object ListProblems extends App {
   val list2 = 4 :: 5 :: 6 :: RNil
 
   println(list1 ++ list2) // [1, 2, 3, 4, 5, 6]
+
+  println(list.removeAt(0)) // [2, 3, 9, 8, 7]
+  println(list.removeAt(1)) // [1, 3, 9, 8, 7]
+  println(list.removeAt(2)) // [1, 2, 9, 8, 7]
+
+  println(list.map(_ * 2)) // [2, 4, 6, 18, 16, 14]
 }
