@@ -22,6 +22,8 @@ abstract class RList[+T] {
   def removeAt(index: Int): RList[T]
 
   def map[S](f: T => S): RList[S]
+
+  def flatMap[S](f: T => RList[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -44,6 +46,8 @@ case object RNil extends RList[Nothing] {
   override def removeAt(index: Int): RList[Nothing] = RNil
 
   override def map[S](f: Nothing => S): RList[S] = RNil
+
+  override def flatMap[S](f: Nothing => RList[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -146,6 +150,18 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     mapHelper(this, RNil)
   }
 
+  override def flatMap[S](f: T => RList[S]): RList[S] = {
+    @tailrec
+    def flatMapHelper(remainingList: RList[T], accumulator: RList[S]): RList[S] = {
+      if (remainingList.isEmpty)
+        accumulator
+      else
+        flatMapHelper(remainingList.tail, accumulator ++ f(remainingList.head))
+    }
+
+    flatMapHelper(this, RNil)
+  }
+
 }
 
 object ListProblems extends App {
@@ -171,4 +187,6 @@ object ListProblems extends App {
   println(list.removeAt(2)) // [1, 2, 9, 8, 7]
 
   println(list.map(_ * 2)) // [2, 4, 6, 18, 16, 14]
+
+  println(list.flatMap(x => x :: x + 1 :: RNil)) // [1, 2, 2, 3, 3, 4, 9, 10, 8, 9, 7, 8]
 }
