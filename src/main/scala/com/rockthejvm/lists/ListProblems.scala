@@ -24,6 +24,8 @@ abstract class RList[+T] {
   def map[S](f: T => S): RList[S]
 
   def flatMap[S](f: T => RList[S]): RList[S]
+
+  def filter(f: T => Boolean): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -48,6 +50,8 @@ case object RNil extends RList[Nothing] {
   override def map[S](f: Nothing => S): RList[S] = RNil
 
   override def flatMap[S](f: Nothing => RList[S]): RList[S] = RNil
+
+  override def filter(f: Nothing => Boolean): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -162,6 +166,20 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     flatMapHelper(this, RNil)
   }
 
+  override def filter(f: T => Boolean): RList[T] = {
+    @tailrec
+    def filterHelper(remainingList: RList[T], accumulator: RList[T]): RList[T] = {
+      if (remainingList.isEmpty)
+        accumulator.reverse
+      else if (f(remainingList.head))
+        filterHelper(remainingList.tail, remainingList.head :: accumulator)
+      else
+        filterHelper(remainingList.tail, accumulator)
+    }
+
+    filterHelper(this, RNil)
+  }
+
 }
 
 object ListProblems extends App {
@@ -189,4 +207,6 @@ object ListProblems extends App {
   println(list.map(_ * 2)) // [2, 4, 6, 18, 16, 14]
 
   println(list.flatMap(x => x :: x + 1 :: RNil)) // [1, 2, 2, 3, 3, 4, 9, 10, 8, 9, 7, 8]
+
+  println(list.filter(_ % 2 == 0)) // [2, 8]
 }
