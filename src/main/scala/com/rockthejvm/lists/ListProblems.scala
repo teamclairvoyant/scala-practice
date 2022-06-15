@@ -26,6 +26,8 @@ abstract class RList[+T] {
   def flatMap[S](f: T => RList[S]): RList[S]
 
   def filter(f: T => Boolean): RList[T]
+
+  def runLengthEncoding: RList[(T, Int)]
 }
 
 case object RNil extends RList[Nothing] {
@@ -52,6 +54,8 @@ case object RNil extends RList[Nothing] {
   override def flatMap[S](f: Nothing => RList[S]): RList[S] = RNil
 
   override def filter(f: Nothing => Boolean): RList[Nothing] = RNil
+
+  override def runLengthEncoding: RList[(Nothing, Int)] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -180,6 +184,25 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     filterHelper(this, RNil)
   }
 
+  override def runLengthEncoding: RList[(T, Int)] = {
+    @tailrec
+    def runLengthEncodingHelper(
+        remaining: RList[T],
+        currentTuple: (T, Int),
+        accumulator: RList[(T, Int)]
+    ): RList[(T, Int)] = {
+      if (remaining.isEmpty && currentTuple._2 == 0)
+        accumulator
+      else if (remaining.isEmpty)
+        currentTuple :: accumulator
+      else if (remaining.head == currentTuple._1)
+        runLengthEncodingHelper(remaining.tail, currentTuple.copy(_2 = currentTuple._2 + 1), accumulator)
+      else
+        runLengthEncodingHelper(remaining.tail, (remaining.head, 1), currentTuple :: accumulator)
+    }
+    runLengthEncodingHelper(this.tail, (this.head, 1), RNil).reverse
+  }
+
 }
 
 object ListProblems extends App {
@@ -209,4 +232,8 @@ object ListProblems extends App {
   println(list.flatMap(x => x :: x + 1 :: RNil)) // [1, 2, 2, 3, 3, 4, 9, 10, 8, 9, 7, 8]
 
   println(list.filter(_ % 2 == 0)) // [2, 8]
+
+  val listRLE = 1 :: 1 :: 2 :: 3 :: 3 :: 3 :: 3 :: 3 :: 4 :: 4 :: 4 :: 5 :: 6 :: RNil
+
+  println(listRLE.runLengthEncoding) // [(1,2), (2,1), (3,5), (4,3), (5,1), (6,1)]
 }
