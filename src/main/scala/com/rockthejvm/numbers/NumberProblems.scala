@@ -126,6 +126,22 @@ object NumberOps {
         -reverseHelper(-n, 0)
     }
 
+    /*
+      Ugly numbers are those numbers whose prime factors are 2, 3 or 5 only
+     */
+    def isUgly: Boolean = {
+      if (n == 1)
+        true
+      else if (n % 2 == 0)
+        (n / 2).isUgly
+      else if (n % 3 == 0)
+        (n / 3).isUgly
+      else if (n % 5 == 0)
+        (n / 5).isUgly
+      else
+        false
+    }
+
   }
 
 }
@@ -165,4 +181,14 @@ object NumberProblems extends App {
   println(-504.reverse) // -405
   println(-540.reverse) // -45
   println(-53678534.reverse) // -43587635
+
+  println(1.isUgly) // true
+  println(2.isUgly) // true
+  println(3.isUgly) // true
+  println(5.isUgly) // true
+  println(6.isUgly) // true
+  println(25.isUgly) // true
+  println(100.isUgly) // true
+  println(14.isUgly) // false
+  println(39.isUgly) // false
 }
