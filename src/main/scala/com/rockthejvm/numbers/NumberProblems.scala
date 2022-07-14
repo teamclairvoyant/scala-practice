@@ -1,6 +1,7 @@
 package com.rockthejvm.numbers
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 
 object NumberOps {
 
@@ -47,53 +48,53 @@ object NumberOps {
     }
 
     /*
-                      decomposeIntoPrimeFactors(11)
-                            = decomposeIntoPrimeFactorsHelper(11, 2, [])
-                              Math.sqrt(11) = 3.3
-                              if(2 > 3.3) -> false
-                              if(11 % 2 == 0) -> false
-                            = decomposeIntoPrimeFactorsHelper(11, 3, [])
-                              if(3 > 3.3) -> false
-                              if(11 % 3 == 0) -> false
-                            = decomposeIntoPrimeFactorsHelper(11, 4, [])
-                              if(4 > 3.3) -> true
-                            = 11 :: []
-                            = [11]
+                  decomposeIntoPrimeFactors(11)
+                        = decomposeIntoPrimeFactorsHelper(11, 2, [])
+                          Math.sqrt(11) = 3.3
+                          if(2 > 3.3) -> false
+                          if(11 % 2 == 0) -> false
+                        = decomposeIntoPrimeFactorsHelper(11, 3, [])
+                          if(3 > 3.3) -> false
+                          if(11 % 3 == 0) -> false
+                        = decomposeIntoPrimeFactorsHelper(11, 4, [])
+                          if(4 > 3.3) -> true
+                        = 11 :: []
+                        = [11]
 
-                      decomposeIntoPrimeFactors(15)
-                            = decomposeIntoPrimeFactorsHelper(15, 2, [])
-                              Math.sqrt(15) = 3.8
-                              if(2 > 3.8) -> false
-                              if(15 % 2 == 0) -> false
-                            = decomposeIntoPrimeFactorsHelper(15, 3, [])
-                              if(3 > 3.8) -> false
-                              if(15 % 3 == 0) -> true
-                            = decomposeIntoPrimeFactorsHelper(5, 3, [3])
-                              Math.sqrt(5) = 2.2
-                              if(3 > 2.2) -> true
-                            = 5 :: [3]
-                            = [5, 3]
+                  decomposeIntoPrimeFactors(15)
+                        = decomposeIntoPrimeFactorsHelper(15, 2, [])
+                          Math.sqrt(15) = 3.8
+                          if(2 > 3.8) -> false
+                          if(15 % 2 == 0) -> false
+                        = decomposeIntoPrimeFactorsHelper(15, 3, [])
+                          if(3 > 3.8) -> false
+                          if(15 % 3 == 0) -> true
+                        = decomposeIntoPrimeFactorsHelper(5, 3, [3])
+                          Math.sqrt(5) = 2.2
+                          if(3 > 2.2) -> true
+                        = 5 :: [3]
+                        = [5, 3]
 
-                      decomposeIntoPrimeFactors(16)
-                            = decomposeIntoPrimeFactorsHelper(16, 2, [])
-                              Math.sqrt(16) = 4
-                              if(2 > 4) -> false
-                              if(16 % 2 == 0) -> true
-                            = decomposeIntoPrimeFactorsHelper(8, 2, [2])
-                              Math.sqrt(8) = 2.8
-                              if(2 > 2.8) -> false
-                              if(8 % 2 == 0) -> true
-                            = decomposeIntoPrimeFactorsHelper(4, 2, [2,2])
-                              Math.sqrt(4) = 2
-                              if(2 > 2) -> false
-                              if(4 % 2 == 0) -> true
-                            = decomposeIntoPrimeFactorsHelper(2, 2, [2,2,2])
-                              Math.sqrt(4) = 1.4
-                              if(2 > 1.4) -> true
-                            = 2 :: [2,2,2]
-                            = [2,2,2,2]
+                  decomposeIntoPrimeFactors(16)
+                        = decomposeIntoPrimeFactorsHelper(16, 2, [])
+                          Math.sqrt(16) = 4
+                          if(2 > 4) -> false
+                          if(16 % 2 == 0) -> true
+                        = decomposeIntoPrimeFactorsHelper(8, 2, [2])
+                          Math.sqrt(8) = 2.8
+                          if(2 > 2.8) -> false
+                          if(8 % 2 == 0) -> true
+                        = decomposeIntoPrimeFactorsHelper(4, 2, [2,2])
+                          Math.sqrt(4) = 2
+                          if(2 > 2) -> false
+                          if(4 % 2 == 0) -> true
+                        = decomposeIntoPrimeFactorsHelper(2, 2, [2,2,2])
+                          Math.sqrt(4) = 1.4
+                          if(2 > 1.4) -> true
+                        = 2 :: [2,2,2]
+                        = [2,2,2,2]
 
-                      Complexity: O(sqrt(N)); can be as low as: O(log(N))
+                  Complexity: O(sqrt(N)); can be as low as: O(log(N))
      */
     def decomposeIntoPrimeFactors: List[Int] = {
       assert(n >= 0)
@@ -116,30 +117,23 @@ object NumberOps {
       def reverseHelper(remaining: Int, accumulator: Int): Int = {
         if (remaining == 0)
           accumulator
-        else
-          reverseHelper(remaining / 10, accumulator * 10 + remaining % 10)
+        else {
+          val lastDigit = remaining % 10
+          val tentativeResult = accumulator * 10 + lastDigit
+
+          if ((accumulator >= 0) != (tentativeResult >= 0))
+            0
+          else
+            reverseHelper(remaining / 10, tentativeResult)
+        }
       }
 
-      if (n >= 0)
+      if (n == Int.MinValue)
+        0
+      else if (n >= 0)
         reverseHelper(n, 0)
       else
         -reverseHelper(-n, 0)
-    }
-
-    /*
-      Ugly numbers are those numbers whose prime factors are 2, 3 or 5 only
-     */
-    def isUgly: Boolean = {
-      if (n == 1)
-        true
-      else if (n % 2 == 0)
-        (n / 2).isUgly
-      else if (n % 3 == 0)
-        (n / 3).isUgly
-      else if (n % 5 == 0)
-        (n / 5).isUgly
-      else
-        false
     }
 
   }
@@ -174,6 +168,7 @@ object NumberProblems extends App {
   println(504.reverse) // 405
   println(540.reverse) // 45
   println(53678534.reverse) // 43587635
+  println(Int.MaxValue.reverse) // 0
 
   println("Negatives:")
   println(-9.reverse) // -9
@@ -181,14 +176,5 @@ object NumberProblems extends App {
   println(-504.reverse) // -405
   println(-540.reverse) // -45
   println(-53678534.reverse) // -43587635
-
-  println(1.isUgly) // true
-  println(2.isUgly) // true
-  println(3.isUgly) // true
-  println(5.isUgly) // true
-  println(6.isUgly) // true
-  println(25.isUgly) // true
-  println(100.isUgly) // true
-  println(14.isUgly) // false
-  println(39.isUgly) // false
+  println(Int.MinValue.reverse) // 0
 }
