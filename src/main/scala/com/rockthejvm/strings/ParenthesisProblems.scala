@@ -24,4 +24,5 @@ object ParenthesisProblems extends App {
   println(hasValidParenthesis("()()")) // true
   println(hasValidParenthesis("(())")) // true
   println(hasValidParenthesis(")(")) // false
+  println(hasValidParenthesis(")()")) // false
 }
